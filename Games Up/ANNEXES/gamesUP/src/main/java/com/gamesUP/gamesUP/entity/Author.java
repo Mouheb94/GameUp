@@ -1,4 +1,4 @@
-package com.gamesUP.gamesUP.model;
+package com.gamesUP.gamesUP.entity;
 
 import java.util.List;
 

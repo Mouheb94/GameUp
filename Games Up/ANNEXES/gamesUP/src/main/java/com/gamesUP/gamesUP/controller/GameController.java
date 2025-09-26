@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.gamesUP.gamesUP.model.Game;
+import com.gamesUP.gamesUP.entity.Game;
 
 public class GameController {
 
