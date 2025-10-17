@@ -20,4 +20,8 @@ public class Avis {
 
 	@Column(name = "rating", nullable = false)
 	private int note;
+
+	@ManyToOne
+	@JoinColumn(name = "game_id", nullable = false)
+	private Game game;
 }

@@ -1,24 +1,28 @@
 package com.gamesUP.gamesUP.dto;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+import lombok.*;
+import java.io.Serializable;
 
-public class GameDTO {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class GameDTO implements Serializable {
 
-    private int id;
+    private Long id;
 
-    @NotNull(message = "Name is required")
-    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
+    @NotBlank(message = "Le nom est requis")
+    @Size(min = 2, max = 100, message = "Le nom doit contenir entre 2 et 100 caractères")
     private String nom;
 
-    @NotNull(message = "Author is required")
-    @Size(min = 2, max = 100, message = "Author must be between 2 and 100 characters")
-    private String auteur;
+    @NotNull(message = "L'auteur est requis")
+    private Long authorId;
 
-    @NotNull(message = "Genre is required")
+    @NotBlank(message = "Le genre est requis")
     private String genre;
 
-    private int categoryId;
-    private int publisherId;
-    private int numEdition;
+    private Long categoryId;
+    private Long publisherId;
+    private Integer numEdition;
 }

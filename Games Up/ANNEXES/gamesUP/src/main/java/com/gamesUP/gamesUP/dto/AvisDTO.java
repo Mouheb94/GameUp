@@ -1,23 +1,26 @@
 package com.gamesUP.gamesUP.dto;
 
 import jakarta.validation.constraints.*;
-
 import lombok.*;
+import java.io.Serializable;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AvisDTO {
+public class AvisDTO implements Serializable {
 
     private Long id;
 
-    @NotNull(message = "Comment is required")
-    @Size(min = 2, max = 500, message = "Comment must be between 2 and 500 characters")
+    @NotBlank(message = "Le commentaire est requis")
+    @Size(min = 2, max = 500, message = "Le commentaire doit contenir entre 2 et 500 caractères")
     private String commentaire;
 
-    @NotNull(message = "Rating is required")
-    @Min(value = 0, message = "Rating must be at least 0")
-    @Max(value = 5, message = "Rating must be at most 5")
+    @NotNull(message = "La note est requise")
+    @Min(value = 0, message = "La note doit être au minimum 0")
+    @Max(value = 10, message = "La note doit être au maximum 10")
     private Integer note;
+
+    @NotNull(message = "L'id du jeu est requis")
+    private Long gameId;
 }

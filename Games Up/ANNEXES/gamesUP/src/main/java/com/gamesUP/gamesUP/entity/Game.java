@@ -13,13 +13,14 @@ public class Game {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(name = "name", nullable = false)
     private String nom;
 
-    @Column(name = "author", nullable = false)
-    private String auteur;
+    @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
+    private Author author;
 
     @Column(name = "genre", nullable = false)
     private String genre;
@@ -33,5 +34,5 @@ public class Game {
     private Publisher publisher;
 
     @Column(name = "edition_number")
-    private int numEdition;
+    private Integer numEdition;
 }

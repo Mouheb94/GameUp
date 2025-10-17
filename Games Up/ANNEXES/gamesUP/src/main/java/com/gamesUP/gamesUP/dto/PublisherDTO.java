@@ -2,16 +2,17 @@ package com.gamesUP.gamesUP.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
+import java.io.Serializable;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PublisherDTO {
+public class PublisherDTO implements Serializable {
 
     private Long id;
 
-    @NotNull(message = "Name is required")
-    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
+    @NotBlank(message = "Le nom est requis")
+    @Size(min = 2, max = 100, message = "Le nom doit contenir entre 2 et 100 caractères")
     private String name;
 }

@@ -19,6 +19,8 @@ public class Author {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
-    @OneToMany(mappedBy = "auteur")
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Game> games;
 }
