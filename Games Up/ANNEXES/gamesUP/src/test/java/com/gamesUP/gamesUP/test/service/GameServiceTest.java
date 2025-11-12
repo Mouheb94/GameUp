@@ -1,4 +1,4 @@
-package com.gamesUP.gamesUP.testUnit;
+package com.gamesUP.gamesUP.test.service;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;

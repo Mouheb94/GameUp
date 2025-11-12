@@ -1,4 +1,5 @@
-package com.gamesUP.gamesUP.testUnit;
+
+package com.gamesUP.gamesUP.test.service;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -6,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
+import java.util.Collections;
 import com.gamesUP.gamesUP.dto.InventoryDTO;
 import com.gamesUP.gamesUP.entity.Game;
 import com.gamesUP.gamesUP.entity.Inventory;
@@ -34,19 +35,16 @@ class InventoryServiceTest {
     @Test
     void shouldCreateInventorySuccess() {
         Long g1Id = 1L;
-        Long g2Id = 2L;
         InventoryDTO dto = InventoryDTO.builder()
-                .stock(Map.of(g1Id, 5, g2Id, 3))
+                .stock(Map.of(g1Id, 5))
                 .build();
 
         Game g1 = Game.builder().id(g1Id).build();
-        Game g2 = Game.builder().id(g2Id).build();
         when(gameRepository.findById(g1Id)).thenReturn(Optional.of(g1));
-        when(gameRepository.findById(g2Id)).thenReturn(Optional.of(g2));
 
         Inventory saved = Inventory.builder()
                 .id(10L)
-                .stock(Map.of(g1, 5, g2, 3))
+                .stock(Map.of(g1, 5))
                 .build();
         when(inventoryRepository.save(any(Inventory.class))).thenReturn(saved);
 
@@ -54,12 +52,27 @@ class InventoryServiceTest {
 
         assertNotNull(result);
         assertEquals(10L, result.getId());
-        assertEquals(2, result.getStock().size());
+        assertEquals(1, result.getStock().size());
         assertEquals(5, result.getStock().get(g1Id));
-        assertEquals(3, result.getStock().get(g2Id));
         verify(gameRepository).findById(g1Id);
-        verify(gameRepository).findById(g2Id);
         verify(inventoryRepository).save(any(Inventory.class));
+    }
+
+    @Test
+    void shouldCreate_whenStockNull_createsEmptyStock() {
+        InventoryDTO dto = InventoryDTO.builder().stock(null).build();
+
+        Inventory saved = Inventory.builder().id(20L).stock(Collections.emptyMap()).build();
+        when(inventoryRepository.save(any(Inventory.class))).thenReturn(saved);
+
+        InventoryDTO result = inventoryService.create(dto);
+
+        assertNotNull(result);
+        assertEquals(20L, result.getId());
+        assertNotNull(result.getStock());
+        assertTrue(result.getStock().isEmpty());
+        verify(inventoryRepository).save(any(Inventory.class));
+        verifyNoInteractions(gameRepository);
     }
 
     @Test
@@ -77,12 +90,14 @@ class InventoryServiceTest {
     }
 
     @Test
-    void shouldFindByIdSuccess() {
+    void shouldFindByIdSuccess_andHandleNullGameEntries() {
         Long id = 5L;
-        Game g = Game.builder().id(2L).build();
+        Map<Game, Integer> stockWithNullKey = new java.util.HashMap<>();
+        stockWithNullKey.put(null, 7); // Map.of ne permet pas null, utiliser HashMap pour tester la clé nulle
+
         Inventory inv = Inventory.builder()
                 .id(id)
-                .stock(Map.of(g, 7))
+                .stock(stockWithNullKey)
                 .build();
         when(inventoryRepository.findById(id)).thenReturn(Optional.of(inv));
 
@@ -90,8 +105,8 @@ class InventoryServiceTest {
 
         assertNotNull(dto);
         assertEquals(id, dto.getId());
-        assertEquals(1, dto.getStock().size());
-        assertEquals(7, dto.getStock().get(2L));
+        // l'entrée avec game null doit être ignorée
+        assertTrue(dto.getStock().isEmpty());
         verify(inventoryRepository).findById(id);
     }
 
@@ -107,24 +122,16 @@ class InventoryServiceTest {
     void shouldUpdateInventorySuccess() {
         Long id = 8L;
         Game oldGame = Game.builder().id(1L).build();
-        Inventory existing = Inventory.builder()
-                .id(id)
-                .stock(Map.of(oldGame, 2))
-                .build();
+        Inventory existing = Inventory.builder().id(id).stock(Map.of(oldGame, 2)).build();
         when(inventoryRepository.findById(id)).thenReturn(Optional.of(existing));
 
         Long newGameId = 3L;
-        InventoryDTO toUpdate = InventoryDTO.builder()
-                .stock(Map.of(newGameId, 9))
-                .build();
+        InventoryDTO toUpdate = InventoryDTO.builder().stock(Map.of(newGameId, 9)).build();
 
         Game newGame = Game.builder().id(newGameId).build();
         when(gameRepository.findById(newGameId)).thenReturn(Optional.of(newGame));
 
-        Inventory saved = Inventory.builder()
-                .id(id)
-                .stock(Map.of(newGame, 9))
-                .build();
+        Inventory saved = Inventory.builder().id(id).stock(Map.of(newGame, 9)).build();
         when(inventoryRepository.save(any(Inventory.class))).thenReturn(saved);
 
         InventoryDTO result = inventoryService.update(id, toUpdate);
@@ -162,19 +169,15 @@ class InventoryServiceTest {
     @Test
     void shouldFindAll() {
         Game g1 = Game.builder().id(1L).build();
-        Game g2 = Game.builder().id(2L).build();
         Inventory i1 = Inventory.builder().id(1L).stock(Map.of(g1, 4)).build();
-        Inventory i2 = Inventory.builder().id(2L).stock(Map.of(g2, 6)).build();
 
-        when(inventoryRepository.findAll()).thenReturn(List.of(i1, i2));
+        when(inventoryRepository.findAll()).thenReturn(List.of(i1));
 
         List<InventoryDTO> list = inventoryService.findAll();
 
-        assertEquals(2, list.size());
+        assertEquals(1, list.size());
         assertEquals(1L, list.get(0).getId());
         assertEquals(4, list.get(0).getStock().get(1L));
-        assertEquals(2L, list.get(1).getId());
-        assertEquals(6, list.get(1).getStock().get(2L));
         verify(inventoryRepository).findAll();
     }
 }

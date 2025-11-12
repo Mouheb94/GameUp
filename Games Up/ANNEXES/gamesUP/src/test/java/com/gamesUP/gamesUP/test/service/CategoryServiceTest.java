@@ -1,4 +1,5 @@
-package com.gamesUP.gamesUP.testUnit;
+
+package com.gamesUP.gamesUP.test.service;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -97,6 +98,38 @@ class CategoryServiceTest {
         verify(categoryRepository).findById(id);
         verify(categoryRepository).findByType("Duplicate");
         verify(categoryRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowWhenUpdateNotFound() {
+        Long id = 10L;
+        when(categoryRepository.findById(id)).thenReturn(Optional.empty());
+        CategoryDTO dto = CategoryDTO.builder().type("Any").build();
+
+        assertThrows(RuntimeException.class, () -> categoryService.update(id, dto));
+        verify(categoryRepository).findById(id);
+        verify(categoryRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldUpdate_whenSameType_noUniquenessLookup() {
+        Long id = 11L;
+        Category existing = Category.builder().id(id).type("Same").build();
+        when(categoryRepository.findById(id)).thenReturn(Optional.of(existing));
+
+        Category saved = Category.builder().id(id).type("Same").build();
+        when(categoryRepository.save(any(Category.class))).thenReturn(saved);
+
+        CategoryDTO dto = CategoryDTO.builder().type("Same").build();
+
+        CategoryDTO result = categoryService.update(id, dto);
+
+        assertNotNull(result);
+        assertEquals(id, result.getId());
+        assertEquals("Same", result.getType());
+        verify(categoryRepository).findById(id);
+        verify(categoryRepository, never()).findByType(anyString());
+        verify(categoryRepository).save(any(Category.class));
     }
 
     @Test

@@ -1,4 +1,5 @@
-package com.gamesUP.gamesUP.testUnit;
+
+package com.gamesUP.gamesUP.test.service;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -103,6 +104,26 @@ class AvisServiceTest {
     }
 
     @Test
+    void shouldFindByIdWhenGameNull_returnsNullGameId() {
+        Long id = 21L;
+        Avis avis = Avis.builder()
+                .id(id)
+                .commentaire("NoGame")
+                .note(3)
+                .game(null)
+                .build();
+        when(avisRepository.findById(id)).thenReturn(Optional.of(avis));
+
+        AvisDTO dto = avisService.findById(id);
+
+        assertNotNull(dto);
+        assertEquals(id, dto.getId());
+        assertEquals("NoGame", dto.getCommentaire());
+        assertNull(dto.getGameId());
+        verify(avisRepository).findById(id);
+    }
+
+    @Test
     void shouldThrowWhenAvisNotFoundOnFind() {
         Long id = 99L;
         when(avisRepository.findById(id)).thenReturn(Optional.empty());
@@ -153,6 +174,85 @@ class AvisServiceTest {
         assertEquals(newGameId, result.getGameId());
         verify(avisRepository).findById(id);
         verify(gameRepository).findById(newGameId);
+        verify(avisRepository).save(any(Avis.class));
+    }
+
+    @Test
+    void shouldUpdateAvis_whenGameIdNull_keepExistingGame() {
+        Long id = 11L;
+        Game existingGame = mock(Game.class);
+        when(existingGame.getId()).thenReturn(55L);
+        Avis existing = Avis.builder()
+                .id(id)
+                .commentaire("Keep")
+                .note(2)
+                .game(existingGame)
+                .build();
+        when(avisRepository.findById(id)).thenReturn(Optional.of(existing));
+
+        Avis saved = Avis.builder()
+                .id(id)
+                .commentaire("KeepUpdated")
+                .note(3)
+                .game(existingGame)
+                .build();
+        when(avisRepository.save(any(Avis.class))).thenReturn(saved);
+
+        AvisDTO toUpdate = AvisDTO.builder()
+                .commentaire("KeepUpdated")
+                .note(3)
+                .gameId(null) // explicit null -> should not lookup gameRepository
+                .build();
+
+        AvisDTO result = avisService.update(id, toUpdate);
+
+        assertNotNull(result);
+        assertEquals(id, result.getId());
+        assertEquals("KeepUpdated", result.getCommentaire());
+        assertEquals(3, result.getNote());
+        assertEquals(55L, result.getGameId());
+        verify(avisRepository).findById(id);
+        verify(gameRepository, never()).findById(anyLong());
+        verify(avisRepository).save(any(Avis.class));
+    }
+
+    @Test
+    void shouldUpdateAvis_whenGameIdEqualsExisting_noLookup() {
+        Long id = 12L;
+        Long sameGameId = 77L;
+        Game existingGame = mock(Game.class);
+        when(existingGame.getId()).thenReturn(sameGameId);
+        Avis existing = Avis.builder()
+                .id(id)
+                .commentaire("Same")
+                .note(1)
+                .game(existingGame)
+                .build();
+        when(avisRepository.findById(id)).thenReturn(Optional.of(existing));
+
+        Avis saved = Avis.builder()
+                .id(id)
+                .commentaire("SameUpdated")
+                .note(2)
+                .game(existingGame)
+                .build();
+        when(avisRepository.save(any(Avis.class))).thenReturn(saved);
+
+        AvisDTO toUpdate = AvisDTO.builder()
+                .commentaire("SameUpdated")
+                .note(2)
+                .gameId(sameGameId) // equals existing -> should not lookup
+                .build();
+
+        AvisDTO result = avisService.update(id, toUpdate);
+
+        assertNotNull(result);
+        assertEquals(id, result.getId());
+        assertEquals("SameUpdated", result.getCommentaire());
+        assertEquals(2, result.getNote());
+        assertEquals(sameGameId, result.getGameId());
+        verify(avisRepository).findById(id);
+        verify(gameRepository, never()).findById(anyLong());
         verify(avisRepository).save(any(Avis.class));
     }
 

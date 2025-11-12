@@ -114,6 +114,35 @@
 			</plugin>
 
 			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.10</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals><goal>prepare-agent</goal></goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals><goal>report</goal></goals>
+						<configuration>
+							<excludes>
+								<exclude>com/gamesUP/gamesUP/dto/*</exclude>
+								<exclude>com/gamesUP/gamesUP/entity/*</exclude>
+								<exclude>com/gamesUP/gamesUP/enumeration/*</exclude>
+								<exclude>com/gamesUP/gamesUP/utils/*</exclude>
+								<exclude>com/gamesUP/gamesUP/security/*</exclude>
+								<exclude>com/gamesUP/gamesUP/*</exclude>
+								<exclude>com/gamesUP/gamesUP/config/*</exclude>
+								<!-- ajouter d'autres patterns si nécessaire (ex: builders, generated) -->
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
