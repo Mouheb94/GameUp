@@ -5,6 +5,7 @@ import com.gamesUP.gamesUP.service.GameService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -18,6 +19,7 @@ public class GameController {
     private final GameService gameService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GameDTO> create(@Valid @RequestBody GameDTO gameDTO) {
         GameDTO created = gameService.create(gameDTO);
         URI location = URI.create(String.format("/api/games/%d", created.getId()));
@@ -25,24 +27,28 @@ public class GameController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GameDTO> update(@PathVariable Long id, @Valid @RequestBody GameDTO gameDTO) {
         GameDTO updated = gameService.update(id, gameDTO);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         gameService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<GameDTO> findById(@PathVariable Long id) {
         GameDTO dto = gameService.findById(id);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<List<GameDTO>> findAll(
             @RequestParam(required = false) String nom,
             @RequestParam(required = false) String genre,

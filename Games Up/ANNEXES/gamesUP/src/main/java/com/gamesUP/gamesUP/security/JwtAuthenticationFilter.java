@@ -1,7 +1,6 @@
 package com.gamesUP.gamesUP.security;
 
 import com.gamesUP.gamesUP.utils.JwtUtil;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,38 +25,49 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private final JwtUtil jwtUtil;
 
+    private boolean isSwaggerPath(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-ui")
+                || path.equals("/swagger-ui.html")
+                || path.equals("/swagger-ui/index.html")
+                || path.startsWith("/webjars/");
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        logger.info("Processing request: {}", request.getRequestURI());
 
+        logger.info("Processing request: {} {}", request.getMethod(), request.getRequestURI());
+        if (isSwaggerPath(request) || "OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (header == null || !header.startsWith("Bearer ")) {
-            logger.warn("Authorization header is missing or does not start with 'Bearer'");
+            logger.debug("Authorization header missing or not Bearer for {}", request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
 
         final String token = header.substring(7);
         try {
-            logger.info("Validating JWT token");
-            Claims claims = jwtUtil.validateToken(token);
-            String email = claims.getSubject();
-            logger.info("Token validated successfully for user: {}", email);
-
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(email, null, Collections.emptyList());
-
-            authentication.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request)
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (jwtUtil.validateToken(token)) {
+                String email = jwtUtil.extractUsername(token);
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(email, null, Collections.emptyList());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.debug("JWT validated for user: {}", email);
+                }
+            } else {
+                logger.debug("Invalid JWT for request {}", request.getRequestURI());
+            }
         } catch (Exception e) {
-            logger.error("JWT validation failed: {}", e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            logger.warn("JWT validation failed for request {}: {}", request.getRequestURI(), e.getMessage());
         }
 
         filterChain.doFilter(request, response);

@@ -5,6 +5,7 @@ import com.gamesUP.gamesUP.service.PurchaseLineService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -18,6 +19,7 @@ public class PurchaseLineController {
     private final PurchaseLineService purchaseLineService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<PurchaseLineDTO> create(
             @RequestParam(name = "purchaseId", required = false) Long purchaseId,
             @Valid @RequestBody PurchaseLineDTO dto) {
@@ -27,6 +29,7 @@ public class PurchaseLineController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<PurchaseLineDTO> update(
             @PathVariable Long id,
             @RequestParam(name = "purchaseId", required = false) Long purchaseId,
@@ -36,18 +39,21 @@ public class PurchaseLineController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         purchaseLineService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<PurchaseLineDTO> findById(@PathVariable Long id) {
         PurchaseLineDTO dto = purchaseLineService.findById(id);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PurchaseLineDTO>> findAll() {
         return ResponseEntity.ok(purchaseLineService.findAll());
     }
