@@ -1,49 +1,69 @@
 package com.gamesUP.gamesUP.controller;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.gamesUP.gamesUP.dto.GameDTO;
+import com.gamesUP.gamesUP.service.GameService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.gamesUP.gamesUP.entity.Game;
+import java.net.URI;
+import java.util.List;
 
+@RestController
+@RequestMapping("/api/games")
+@RequiredArgsConstructor
 public class GameController {
 
-    private String jdbcUrl = "jdbc:mysql://localhost:3306/gameUP";
-    private String username = "root";
-    private String password = "password";
-
-    @GetMapping
-    public List<Game> getAllJeux() {
-        List<Game> jeux = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
-             Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT * FROM jeux")) {
-
-            while (rs.next()) {
-                Game game = new Game();
-                game.id=rs.getInt("id");
-                game.nom = rs.getString("nom");
-                game.auteur=rs.getString("auteur");
-                jeux.add(game);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return jeux;
-    }
+    private final GameService gameService;
 
     @PostMapping
-    public void ajouterJeu(@RequestBody Game game) {
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
-             PreparedStatement stmt = connection.prepareStatement("INSERT INTO jeux (nom, auteur) VALUES (?, ?)")) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<GameDTO> create(@Valid @RequestBody GameDTO gameDTO) {
+        GameDTO created = gameService.create(gameDTO);
+        URI location = URI.create(String.format("/api/games/%d", created.getId()));
+        return ResponseEntity.created(location).body(created);
+    }
 
-            stmt.setString(1, game.nom);
-            stmt.setString(2, game.auteur);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<GameDTO> update(@PathVariable Long id, @Valid @RequestBody GameDTO gameDTO) {
+        GameDTO updated = gameService.update(id, gameDTO);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        gameService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
+    public ResponseEntity<GameDTO> findById(@PathVariable Long id) {
+        GameDTO dto = gameService.findById(id);
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
+    public ResponseEntity<List<GameDTO>> findAll(
+            @RequestParam(required = false) String nom,
+            @RequestParam(required = false) String genre,
+            @RequestParam(required = false) Long authorId) {
+
+        List<GameDTO> list;
+        if (nom != null && !nom.isEmpty()) {
+            list = gameService.findByNomContaining(nom);
+        } else if (genre != null && !genre.isEmpty()) {
+            list = gameService.findByGenre(genre);
+        } else if (authorId != null) {
+            list = gameService.findByAuthorId(authorId);
+        } else {
+            list = gameService.findAll();
         }
+        return ResponseEntity.ok(list);
     }
 }
