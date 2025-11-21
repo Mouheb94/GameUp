@@ -1,17 +1,19 @@
-
 package com.gamesUP.gamesUP.test.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gamesUP.gamesUP.dto.PurchaseLineDTO;
 import com.gamesUP.gamesUP.security.JwtAuthenticationFilter;
 import com.gamesUP.gamesUP.service.PurchaseLineService;
+import com.gamesUP.gamesUP.utils.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,7 +25,8 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = com.gamesUP.gamesUP.controller.PurchaseLineController.class)
+@WebMvcTest( controllers = com.gamesUP.gamesUP.controller.PurchaseLineController.class,
+        excludeAutoConfiguration = { SecurityAutoConfiguration.class })
 @AutoConfigureMockMvc(addFilters = false)
 class PurchaseLineControllerTest {
 
@@ -38,6 +41,12 @@ class PurchaseLineControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private JwtUtil jwtUtil;
+
+    @MockBean
+    private UserDetailsService userDetailsService;
 
     @Test
     void shouldCreateWithPurchase_whenValid_thenCreated() throws Exception {

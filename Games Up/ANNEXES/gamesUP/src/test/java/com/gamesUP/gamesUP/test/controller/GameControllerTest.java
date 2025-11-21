@@ -4,6 +4,7 @@ package com.gamesUP.gamesUP.test.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gamesUP.gamesUP.dto.GameDTO;
 import com.gamesUP.gamesUP.security.JwtAuthenticationFilter;
+import com.gamesUP.gamesUP.security.JwtRequestFilter;
 import com.gamesUP.gamesUP.service.GameService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,9 @@ class GameControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private JwtRequestFilter jwtRequestFilter;
 
     @Test
     void shouldCreateGame_whenValid_thenCreated() throws Exception {

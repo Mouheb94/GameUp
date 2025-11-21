@@ -4,6 +4,7 @@ package com.gamesUP.gamesUP.test.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gamesUP.gamesUP.dto.PublisherDTO;
 import com.gamesUP.gamesUP.security.JwtAuthenticationFilter;
+import com.gamesUP.gamesUP.security.JwtRequestFilter;
 import com.gamesUP.gamesUP.service.PublisherService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,9 @@ class PublisherControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private JwtRequestFilter jwtRequestFilter;
 
     @Test
     void shouldCreatePublisher_whenValid_thenCreated() throws Exception {
