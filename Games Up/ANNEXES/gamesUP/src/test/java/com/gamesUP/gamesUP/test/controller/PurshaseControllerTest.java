@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gamesUP.gamesUP.dto.PurchaseDTO;
 import com.gamesUP.gamesUP.dto.PurchaseLineDTO;
 import com.gamesUP.gamesUP.security.JwtAuthenticationFilter;
+import com.gamesUP.gamesUP.security.JwtRequestFilter;
 import com.gamesUP.gamesUP.service.PurchaseService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ class PurchaseControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private JwtRequestFilter jwtRequestFilter;
 
     @Test
     void shouldCreatePurchase_whenValid_thenCreated() throws Exception {

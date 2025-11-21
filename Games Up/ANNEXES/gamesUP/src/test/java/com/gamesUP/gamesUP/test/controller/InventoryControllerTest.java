@@ -4,6 +4,7 @@ package com.gamesUP.gamesUP.test.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gamesUP.gamesUP.dto.InventoryDTO;
 import com.gamesUP.gamesUP.security.JwtAuthenticationFilter;
+import com.gamesUP.gamesUP.security.JwtRequestFilter;
 import com.gamesUP.gamesUP.service.InventoryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ class InventoryControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private JwtRequestFilter jwtRequestFilter;
 
     @Test
     void shouldCreateInventory_whenValid_thenCreated() throws Exception {

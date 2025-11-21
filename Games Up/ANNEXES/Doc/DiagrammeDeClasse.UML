@@ -1,0 +1,93 @@
+@startuml
+title Diagramme de classes - GamesUP
+
+package "domain.entities" {
+  class User {
+    + Long id
+    + String firstName
+    + String lastName
+    + String email
+    + String password
+    + Role role
+  }
+
+  class Game {
+    + Long id
+    + String title
+    + String description
+    + BigDecimal price
+    + Integer stock
+    + LocalDate releaseDate
+  }
+
+  class Author {
+    + Long id
+    + String name
+  }
+
+  class Publisher {
+    + Long id
+    + String name
+  }
+
+  class Category {
+    + Long id
+    + String name
+  }
+
+  class Purchase {
+    + Long id
+    + LocalDateTime createdAt
+    + BigDecimal total
+    + PurchaseStatus status
+  }
+
+  class PurchaseLine {
+    + Long id
+    + Integer quantity
+    + BigDecimal unitPrice
+  }
+
+  class Wishlist {
+    + Long id
+  }
+
+  class Review {
+    + Long id
+    + Integer rating
+    + String comment
+    + LocalDateTime postedAt
+  }
+
+  class Inventory {
+    + Long id
+    + Map\<Game,Integer\> stockMap
+  }
+
+  enum Role {
+    ADMIN
+    CUSTOMER
+  }
+
+}
+
+' Relations
+User "1" -- "0..*" Purchase : "purchases"
+Purchase "1" -- "1..*" PurchaseLine : "lines"
+PurchaseLine "*" -- "1" Game : "game"
+User "1" -- "0..1" Wishlist : "wishlist"
+Wishlist "1" -- "*" Game : "games"
+Game "*" -- "0..1" Category : "category"
+Game "*" -- "0..1" Publisher : "publisher"
+Game "*" -- "*" Author : "authors"
+Game "1" -- "*" Review : "reviews"
+User "1" -- "*" Review : "reviews"
+Inventory "1" -- "*" Game : "trackedGames"
+
+note top of User
+  - mot de passe stocké haché (BCrypt)
+  - unique(email)
+end note
+
+
+@enduml

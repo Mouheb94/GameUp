@@ -1,9 +1,9 @@
-// java
 package com.gamesUP.gamesUP.test.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gamesUP.gamesUP.dto.WishlistDTO;
 import com.gamesUP.gamesUP.security.JwtAuthenticationFilter;
+import com.gamesUP.gamesUP.security.JwtRequestFilter;
 import com.gamesUP.gamesUP.service.WishlistService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +39,9 @@ class WishlistControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private JwtRequestFilter jwtRequestFilter;
 
     @Test
     void shouldCreate_whenValid_thenCreated() throws Exception {

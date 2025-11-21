@@ -5,6 +5,7 @@ import com.gamesUP.gamesUP.dto.UserDTO;
 import com.gamesUP.gamesUP.entity.User;
 import com.gamesUP.gamesUP.enumeration.Role;
 import com.gamesUP.gamesUP.security.JwtAuthenticationFilter;
+import com.gamesUP.gamesUP.security.JwtRequestFilter;
 import com.gamesUP.gamesUP.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +34,11 @@ public class UsercontrollerTest {
     @MockBean
     private UserService userService;
 
-    // Ajout du MockBean pour le filtre JWT utilisé par le contexte de sécurité
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private JwtRequestFilter jwtRequestFilter;
 
     @Test
     void shouldSignUp_whenValid_thenOk() throws Exception {

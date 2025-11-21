@@ -3,6 +3,7 @@ package com.gamesUP.gamesUP.test.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gamesUP.gamesUP.dto.AuthorDTO;
+import com.gamesUP.gamesUP.security.JwtRequestFilter;
 import com.gamesUP.gamesUP.service.AuthorService;
 import com.gamesUP.gamesUP.security.JwtAuthenticationFilter;
 import org.junit.jupiter.api.Test;
@@ -35,9 +36,11 @@ class AuthorControllerTest {
     @MockBean
     private AuthorService authorService;
 
-    // Mock du filtre JWT pour satisfaire l'injection dans SecurityConfig
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private JwtRequestFilter jwtRequestFilter;
 
     @Test
     void shouldCreateAuthor() throws Exception {

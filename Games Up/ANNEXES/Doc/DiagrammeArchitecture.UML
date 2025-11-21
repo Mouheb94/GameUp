@@ -1,0 +1,16 @@
+@startuml
+actor "Utilisateur" as User
+
+component "Frontend Angular" as Frontend
+component "API Spring Boot\n(REST + JWT + Business)" as Spring
+component "Service ML FastAPI\n(Recommandations KNN)" as FastAPI
+
+database "PostgreSQL" as DB
+queue "Redis" as Cache
+
+User --> Frontend : Navigation web (HTTPS)
+Frontend --> Spring : Appels REST (JSON + JWT)
+Spring --> DB : Lecture / écriture
+Spring --> Cache : Cache / sessions
+Spring --> FastAPI : /recommend (JSON)
+@enduml

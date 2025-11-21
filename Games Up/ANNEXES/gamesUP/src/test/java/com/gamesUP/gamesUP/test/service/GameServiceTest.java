@@ -62,78 +62,125 @@ class GameServiceTest {
     }
 
     @Test
-    void shouldThrowWhenAuthorNotFoundOnCreate() {
-        Long authorId = 2L;
+    void shouldCreateGameWithoutAuthor() {
         GameDTO dto = GameDTO.builder()
-                .nom("NoAuthorGame")
-                .genre("RPG")
-                .authorId(authorId)
+                .nom("SoloGame")
+                .genre("Indie")
+                .authorId(null)
                 .build();
+
+        Game saved = Game.builder()
+                .id(11L)
+                .nom(dto.getNom())
+                .genre(dto.getGenre())
+                .author(null)
+                .build();
+        when(gameRepository.save(any(Game.class))).thenReturn(saved);
+
+        GameDTO result = gameService.create(dto);
+
+        assertNotNull(result);
+        assertEquals(11L, result.getId());
+        assertNull(result.getAuthorId());
+        verify(authorRepository, never()).findById(anyLong());
+        verify(gameRepository).save(any(Game.class));
+    }
+
+    @Test
+    void shouldThrowWhenAuthorNotFoundOnCreate() {
+        Long authorId = 99L;
+        GameDTO dto = GameDTO.builder().nom("Bad").authorId(authorId).build();
 
         when(authorRepository.findById(authorId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> gameService.create(dto));
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> gameService.create(dto));
+        assertTrue(ex.getMessage().contains(String.valueOf(authorId)));
         verify(authorRepository).findById(authorId);
         verify(gameRepository, never()).save(any());
     }
 
     @Test
     void shouldUpdateGameAndChangeAuthor() {
-        Long id = 5L;
-        Long oldAuthorId = 1L;
-        Long newAuthorId = 3L;
+        Long gameId = 2L;
+        Author oldAuthor = Author.builder().id(1L).build();
+        Game existing = Game.builder().id(gameId).nom("Old").genre("RPG").author(oldAuthor).build();
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(existing));
 
-        Author oldAuthor = Author.builder().id(oldAuthorId).build();
-        Game existing = Game.builder()
-                .id(id)
-                .nom("AncienNom")
-                .genre("OldGenre")
-                .author(oldAuthor)
-                .build();
-        when(gameRepository.findById(id)).thenReturn(Optional.of(existing));
+        Long newAuthorId = 2L;
+        GameDTO dto = GameDTO.builder().nom("New").genre("Adventure").authorId(newAuthorId).build();
 
         Author newAuthor = Author.builder().id(newAuthorId).build();
         when(authorRepository.findById(newAuthorId)).thenReturn(Optional.of(newAuthor));
 
-        Game saved = Game.builder()
-                .id(id)
-                .nom("NouveauNom")
-                .genre("NewGenre")
-                .author(newAuthor)
-                .build();
-        when(gameRepository.save(any(Game.class))).thenReturn(saved);
+        Game saved = Game.builder().id(gameId).nom("New").genre("Adventure").author(newAuthor).build();
+        when(gameRepository.save(existing)).thenReturn(saved);
 
-        GameDTO toUpdate = GameDTO.builder()
-                .nom("NouveauNom")
-                .genre("NewGenre")
-                .authorId(newAuthorId)
-                .build();
+        GameDTO result = gameService.update(gameId, dto);
 
-        GameDTO result = gameService.update(id, toUpdate);
-
-        assertNotNull(result);
-        assertEquals(id, result.getId());
-        assertEquals("NouveauNom", result.getNom());
-        assertEquals("NewGenre", result.getGenre());
+        assertEquals(gameId, result.getId());
+        assertEquals("New", result.getNom());
+        assertEquals("Adventure", result.getGenre());
         assertEquals(newAuthorId, result.getAuthorId());
-        verify(gameRepository).findById(id);
+        verify(gameRepository).findById(gameId);
         verify(authorRepository).findById(newAuthorId);
-        verify(gameRepository).save(any(Game.class));
+        verify(gameRepository).save(existing);
+    }
+
+    @Test
+    void shouldUpdateGameWhenAuthorUnchanged() {
+        Long gameId = 3L;
+        Author author = Author.builder().id(5L).build();
+        Game existing = Game.builder().id(gameId).nom("Keep").genre("Sim").author(author).build();
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(existing));
+
+        GameDTO dto = GameDTO.builder().nom("Keep2").genre("Sim2").authorId(5L).build();
+
+        Game saved = Game.builder().id(gameId).nom("Keep2").genre("Sim2").author(author).build();
+        when(gameRepository.save(existing)).thenReturn(saved);
+
+        GameDTO result = gameService.update(gameId, dto);
+
+        assertEquals(5L, result.getAuthorId());
+        verify(authorRepository, never()).findById(anyLong());
+        verify(gameRepository).save(existing);
+    }
+
+    @Test
+    void shouldUpdateGameAndSetAuthorWhenExistingAuthorNull() {
+        Long gameId = 4L;
+        Game existing = Game.builder().id(gameId).nom("NoAuth").genre("Misc").author(null).build();
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(existing));
+
+        Long newAuthorId = 7L;
+        GameDTO dto = GameDTO.builder().nom("WithAuth").genre("Misc2").authorId(newAuthorId).build();
+
+        Author newAuthor = Author.builder().id(newAuthorId).build();
+        when(authorRepository.findById(newAuthorId)).thenReturn(Optional.of(newAuthor));
+
+        Game saved = Game.builder().id(gameId).nom("WithAuth").genre("Misc2").author(newAuthor).build();
+        when(gameRepository.save(existing)).thenReturn(saved);
+
+        GameDTO result = gameService.update(gameId, dto);
+
+        assertEquals(newAuthorId, result.getAuthorId());
+        verify(authorRepository).findById(newAuthorId);
+        verify(gameRepository).save(existing);
     }
 
     @Test
     void shouldThrowWhenGameNotFoundOnUpdate() {
-        Long id = 99L;
+        Long id = 50L;
         when(gameRepository.findById(id)).thenReturn(Optional.empty());
-        GameDTO dto = GameDTO.builder().nom("X").genre("Y").build();
-        assertThrows(RuntimeException.class, () -> gameService.update(id, dto));
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> gameService.update(id, GameDTO.builder().build()));
+        assertTrue(ex.getMessage().contains(String.valueOf(id)));
         verify(gameRepository).findById(id);
         verify(gameRepository, never()).save(any());
     }
 
     @Test
     void shouldDeleteGameSuccess() {
-        Long id = 7L;
+        Long id = 20L;
         when(gameRepository.existsById(id)).thenReturn(true);
 
         gameService.delete(id);
@@ -144,58 +191,53 @@ class GameServiceTest {
 
     @Test
     void shouldThrowWhenDeleteNotFound() {
-        Long id = 8L;
+        Long id = 21L;
         when(gameRepository.existsById(id)).thenReturn(false);
 
-        assertThrows(RuntimeException.class, () -> gameService.delete(id));
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> gameService.delete(id));
+        assertTrue(ex.getMessage().contains(String.valueOf(id)));
         verify(gameRepository).existsById(id);
         verify(gameRepository, never()).deleteById(anyLong());
     }
 
     @Test
     void shouldFindByIdSuccess() {
-        Long id = 11L;
-        Author author = Author.builder().id(4L).build();
-        Game g = Game.builder().id(id).nom("FindMe").genre("Sim").author(author).build();
+        Long id = 30L;
+        Game g = Game.builder().id(id).nom("Found").genre("Arcade").build();
         when(gameRepository.findById(id)).thenReturn(Optional.of(g));
 
         GameDTO dto = gameService.findById(id);
 
-        assertNotNull(dto);
         assertEquals(id, dto.getId());
-        assertEquals("FindMe", dto.getNom());
-        assertEquals("Sim", dto.getGenre());
-        assertEquals(4L, dto.getAuthorId());
+        assertEquals("Found", dto.getNom());
         verify(gameRepository).findById(id);
     }
 
     @Test
     void shouldThrowWhenFindByIdNotFound() {
-        Long id = 12L;
+        Long id = 31L;
         when(gameRepository.findById(id)).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> gameService.findById(id));
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> gameService.findById(id));
+        assertTrue(ex.getMessage().contains(String.valueOf(id)));
         verify(gameRepository).findById(id);
     }
 
     @Test
     void shouldFindAllAndOtherQueries() {
-        Author a1 = Author.builder().id(1L).build();
-        Author a2 = Author.builder().id(2L).build();
-        Game g1 = Game.builder().id(1L).nom("Alpha").genre("Action").author(a1).build();
-        Game g2 = Game.builder().id(2L).nom("Beta").genre("Puzzle").author(a2).build();
-
+        Game g1 = Game.builder().id(1L).nom("Alpha").genre("Puzzle").build();
+        Game g2 = Game.builder().id(2L).nom("Beta").genre("Puzzle").build();
         when(gameRepository.findAll()).thenReturn(List.of(g1, g2));
         when(gameRepository.findByNomContainingIgnoreCase("Al")).thenReturn(List.of(g1));
         when(gameRepository.findByGenre("Puzzle")).thenReturn(List.of(g2));
-        when(gameRepository.findByAuthorId(2L)).thenReturn(List.of(g2));
+        when(gameRepository.findByAuthorId(2L)).thenReturn(List.of(Game.builder().id(2L).nom("ByAuth").build()));
 
         var all = gameService.findAll();
         assertEquals(2, all.size());
-        assertEquals("Alpha", all.get(0).getNom());
 
-        var byNom = gameService.findByNomContaining("Al");
-        assertEquals(1, byNom.size());
-        assertEquals("Alpha", byNom.get(0).getNom());
+        var byName = gameService.findByNomContaining("Al");
+        assertEquals(1, byName.size());
+        assertEquals("Alpha", byName.get(0).getNom());
 
         var byGenre = gameService.findByGenre("Puzzle");
         assertEquals(1, byGenre.size());

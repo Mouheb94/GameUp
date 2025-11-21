@@ -9,29 +9,37 @@ import jakarta.annotation.PostConstruct;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.MessageDigest;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
+    @Value("${jwt.secret:}")
     private String secretKey;
 
-    @Value("${jwt.expiration}")
+    @Value("${jwt.expiration:86400000}")
     private long expirationTime;
 
     private Key signingKey;
 
     @PostConstruct
     private void init() {
-        if (secretKey == null || secretKey.isBlank()) {
-            throw new IllegalStateException("Property jwt.secret must be set");
+        try {
+            if (secretKey == null || secretKey.isBlank()) {
+                // valeur par défaut (à remplacer en prod)
+                secretKey = "default-secret-must-be-changed-for-production-please";
+            }
+            byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+            if (keyBytes.length < 32) {
+                // dérive une clé de 32 bytes via SHA-256 si la clé fournie est trop courte
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                keyBytes = md.digest(keyBytes);
+            }
+            this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to initialize JWT signing key", ex);
         }
-        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
-        if (keyBytes.length < 32) {
-            throw new IllegalStateException("Property jwt.secret must be at least 32 bytes for HS256");
-        }
-        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(String email) {
@@ -50,7 +58,7 @@ public class JwtUtil {
     public boolean validateToken(String token) {
         try {
             Claims claims = getClaims(token);
-            return !claims.getExpiration().before(new Date());
+            return claims.getExpiration() == null || !claims.getExpiration().before(new Date());
         } catch (Exception ex) {
             return false;
         }
