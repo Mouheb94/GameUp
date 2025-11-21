@@ -1,0 +1,55 @@
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+
+'=== Client Layer ===
+package "Client" {
+  [Angular App] <<component>> as Angular
+}
+
+'=== Backend Spring Boot ===
+package "Backend (Spring Boot)" {
+  [API Controllers] <<component>> as Controllers
+  [Business Services] <<component>> as Services
+  [JPA Repositories] <<component>> as Repositories
+  [Security (JWT + Auth)] <<component>> as Security
+  [Recommendation Client\n(WebClient HTTP)] <<component>> as RecoClient
+}
+
+'=== Machine Learning Layer ===
+package "Machine Learning (Python FastAPI)" {
+  [Recommendation API\n(FastAPI + KNN Model)] <<component>> as Reco
+}
+
+'=== Database ===
+database "PostgreSQL / MySQL" as DB
+
+'=== FLOW ===
+Angular --> Controllers : HTTP REST\nAuthorization: Bearer JWT
+
+Controllers --> Security : Vérification JWT\nRôles / permissions
+
+Controllers --> Services : Appels métiers\nDTO → Entity (validation)
+
+Services --> Repositories : Accès données (JPA/Hibernate)
+Repositories --> DB : SQL (ORM) lecture/écriture
+
+'=== Recommandations ===
+Services --> RecoClient : Envoie features utilisateur\nHTTP POST /recommend
+RecoClient --> Reco : JSON (historique, wishlist, ratings)
+Reco --> RecoClient : JSON (liste des jeux recommandés)
+RecoClient --> Services : résultats ML
+
+note right of Angular
+UI, pages, services HTTP,\nroute guards, JWT storage
+end note
+
+note right of Reco
+Chargement modèle KNN (.pkl),\ncalcul similarité, top-N
+end note
+
+note left of Repositories
+Spring Data JPA,\ntransactions, entités persistées
+end note
+
+@enduml

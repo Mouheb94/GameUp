@@ -1,0 +1,30 @@
+@startuml
+actor "Utilisateur" as User
+participant "Frontend Angular\n(SPA)" as Frontend
+participant "API Spring Boot\nController → Service → Repository" as Spring
+participant "Service Recommandation\nFastAPI (Python ML)" as ApiPython
+database "Base de données\nPostgreSQL" as DB
+
+User -> Frontend : Action utilisateur\n(click, search, submit)
+Frontend -> Spring : HTTP Request (JSON)\nGET/POST /api/...\nAuthorization: Bearer JWT
+
+activate Spring
+Spring -> Spring : Authentification / Validation\n(JWT, rôles, DTO validation)
+Spring -> Spring : Logique métier\n(vérifications, mapping DTO→Entity)
+
+Spring -> DB : Lecture/Écriture via JPA\n(find/save/update/delete)
+DB --> Spring : Résultat (Entity / OK)
+
+Spring -> ApiPython : POST /recommend\n(features utilisateur, historique, wishlist...)
+activate ApiPython
+ApiPython -> ApiPython : Chargement modèle KNN (.pkl)
+ApiPython -> ApiPython : Calcul recommandations\n(similarité, scoring, top-N)
+ApiPython --> Spring : JSON (liste de recommandations)
+deactivate ApiPython
+
+Spring -> Spring : Assemblage réponse DTO\n(insertion des recommandations)
+Spring --> Frontend : Réponse JSON (DTO + reco)
+deactivate Spring
+
+Frontend -> User : Affichage des recommandations
+@enduml
