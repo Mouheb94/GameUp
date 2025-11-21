@@ -62,7 +62,6 @@ class PublisherControllerTest {
 
     @Test
     void shouldReturnBadRequest_whenInvalidPayload() throws Exception {
-        // name trop court -> validation 400
         PublisherDTO invalid = PublisherDTO.builder().name("X").build();
 
         mockMvc.perform(post("/api/publishers")

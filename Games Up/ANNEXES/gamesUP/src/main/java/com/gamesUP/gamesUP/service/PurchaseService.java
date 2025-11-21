@@ -31,7 +31,6 @@ public class PurchaseService {
     public PurchaseDTO create(PurchaseDTO dto) {
         Purchase p = toEntity(dto);
         Purchase saved = purchaseRepository.save(p);
-        // cascade should save lines, but ensure IDs are refreshed
         return toDto(saved);
     }
 
@@ -39,18 +38,15 @@ public class PurchaseService {
     public PurchaseDTO update(Long id, PurchaseDTO dto) {
         Purchase existing = purchaseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase not found: " + id));
-        // replace basic fields
         existing.setDate(dto.getDate() != null ? dto.getDate() : existing.getDate());
         existing.setPaid(dto.isPaid());
         existing.setDelivered(dto.isDelivered());
         existing.setArchived(dto.isArchived());
-        // replace user if provided
         if (dto.getUserId() != null) {
             User u = userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new RuntimeException("User not found: " + dto.getUserId()));
             existing.setUser(u);
         }
-        // replace lines: remove existing and set new ones
         existing.getLines().clear();
         List<PurchaseLine> newLines = dto.getLines().stream()
                 .map(l -> toEntityLine(l, existing))

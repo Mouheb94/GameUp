@@ -135,7 +135,6 @@ class AuthorControllerTest {
     @Test
     void shouldReturnNotFoundOnUpdateWhenNotFound() throws Exception {
         Long missing = 100L;
-        // nom valide (>= 2 caractères) pour éviter la validation 400
         AuthorDTO input = AuthorDTO.builder().name("XY").build();
         when(authorService.update(eq(missing), any())).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Author not found: " + missing));
 

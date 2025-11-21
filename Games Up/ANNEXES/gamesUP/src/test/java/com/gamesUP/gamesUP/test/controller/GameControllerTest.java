@@ -90,8 +90,6 @@ class GameControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    // --- nouveaux tests pour couvrir les branches de findAll() ---
-
     @Test
     void shouldFindAll_whenNomParam_thenUseFindByNomContaining() throws Exception {
         GameDTO g = GameDTO.builder().id(1L).nom("Match").authorId(1L).genre("Action").build();

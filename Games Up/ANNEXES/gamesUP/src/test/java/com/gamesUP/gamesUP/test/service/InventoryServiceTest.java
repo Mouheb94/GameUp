@@ -93,7 +93,7 @@ class InventoryServiceTest {
     void shouldFindByIdSuccess_andHandleNullGameEntries() {
         Long id = 5L;
         Map<Game, Integer> stockWithNullKey = new java.util.HashMap<>();
-        stockWithNullKey.put(null, 7); // Map.of ne permet pas null, utiliser HashMap pour tester la clé nulle
+        stockWithNullKey.put(null, 7);
 
         Inventory inv = Inventory.builder()
                 .id(id)
@@ -105,7 +105,6 @@ class InventoryServiceTest {
 
         assertNotNull(dto);
         assertEquals(id, dto.getId());
-        // l'entrée avec game null doit être ignorée
         assertTrue(dto.getStock().isEmpty());
         verify(inventoryRepository).findById(id);
     }

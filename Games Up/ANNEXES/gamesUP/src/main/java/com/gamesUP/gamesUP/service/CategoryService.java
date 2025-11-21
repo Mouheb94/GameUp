@@ -25,7 +25,6 @@ public class CategoryService {
     public CategoryDTO update(Long id, CategoryDTO dto) {
         Category existing = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found: " + id));
-        // If changing type, ensure uniqueness
         if (!existing.getType().equals(dto.getType())) {
             categoryRepository.findByType(dto.getType()).ifPresent(c ->
             { throw new RuntimeException("Category already exists with type: " + dto.getType()); });

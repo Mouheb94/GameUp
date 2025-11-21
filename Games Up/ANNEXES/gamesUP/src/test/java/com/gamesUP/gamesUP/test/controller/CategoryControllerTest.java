@@ -62,7 +62,6 @@ class CategoryControllerTest {
 
     @Test
     void shouldReturnBadRequest_whenInvalidPayload() throws Exception {
-        // type trop court -> validation 400
         CategoryDTO invalid = CategoryDTO.builder().type("X").build();
 
         mockMvc.perform(post("/api/categories")
