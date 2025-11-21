@@ -190,7 +190,7 @@ class UserServiceTest {
                 .nom("   ")
                 .password("  ")
                 .role(null)
-                .email("keep@e.com") // same as existing
+                .email("keep@e.com")
                 .build();
 
         when(userRepository.save(existing)).thenReturn(existing);

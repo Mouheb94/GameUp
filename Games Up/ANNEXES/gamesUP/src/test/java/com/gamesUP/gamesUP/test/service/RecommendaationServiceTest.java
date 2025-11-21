@@ -27,7 +27,6 @@ class RecommendationServiceTest {
     void setup() {
         service = new RecommendationService();
         restTemplate = mock(RestTemplate.class);
-        // injecter le mock RestTemplate et une URL de test
         ReflectionTestUtils.setField(service, "restTemplate", restTemplate);
         ReflectionTestUtils.setField(service, "pythonUrl", "http://test/recommendations/");
     }

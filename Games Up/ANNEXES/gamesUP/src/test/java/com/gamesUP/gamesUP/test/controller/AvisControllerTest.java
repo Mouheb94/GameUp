@@ -71,7 +71,6 @@ class AvisControllerTest {
 
     @Test
     void shouldReturnBadRequest_whenInvalidPayload() throws Exception {
-        // commentaire trop court (min 2) -> validation 400
         AvisDTO invalid = AvisDTO.builder()
                 .commentaire("X")
                 .note(5)

@@ -33,11 +33,9 @@ public class WishlistService {
     public WishlistDTO update(Long id, WishlistDTO dto) {
         Wishlist existing = wishlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Wishlist not found: " + id));
-        // update user
         User u = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found: " + dto.getUserId()));
         existing.setUser(u);
-        // update games
         Set<Game> games = dto.getGameIds() == null ? Set.of() :
                 dto.getGameIds().stream()
                         .map(gameId -> gameRepository.findById(gameId)

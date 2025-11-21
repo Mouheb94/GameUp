@@ -1,4 +1,3 @@
-// language: java
 package com.gamesUP.gamesUP.test.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

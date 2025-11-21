@@ -142,7 +142,6 @@ class PurchaseServiceTest {
                 .archived(false)
                 .lines(new ArrayList<>(List.of(oldLine)))
                 .build();
-        // ensure existing.getLines() not null
         oldLine.setPurchase(existing);
 
         when(purchaseRepository.findById(id)).thenReturn(Optional.of(existing));

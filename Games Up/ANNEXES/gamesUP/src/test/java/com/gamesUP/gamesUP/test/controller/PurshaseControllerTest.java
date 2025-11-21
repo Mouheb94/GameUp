@@ -81,7 +81,6 @@ class PurchaseControllerTest {
 
     @Test
     void shouldReturnBadRequest_whenInvalidPayload() throws Exception {
-        // payload invalide : manque userId et lines -> validation 400
         String invalidJson = "{}";
 
         mockMvc.perform(post("/api/purchases")

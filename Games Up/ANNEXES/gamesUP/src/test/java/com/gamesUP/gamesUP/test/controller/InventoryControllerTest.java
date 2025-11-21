@@ -69,7 +69,6 @@ class InventoryControllerTest {
 
     @Test
     void shouldReturnBadRequest_whenInvalidPayload() throws Exception {
-        // missing stock -> validation should fail (stock @NotNull)
         String invalidJson = "{}";
 
         mockMvc.perform(post("/api/inventories")

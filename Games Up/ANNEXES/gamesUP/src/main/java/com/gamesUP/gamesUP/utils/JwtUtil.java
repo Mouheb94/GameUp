@@ -27,12 +27,10 @@ public class JwtUtil {
     private void init() {
         try {
             if (secretKey == null || secretKey.isBlank()) {
-                // valeur par défaut (à remplacer en prod)
                 secretKey = "default-secret-must-be-changed-for-production-please";
             }
             byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
             if (keyBytes.length < 32) {
-                // dérive une clé de 32 bytes via SHA-256 si la clé fournie est trop courte
                 MessageDigest md = MessageDigest.getInstance("SHA-256");
                 keyBytes = md.digest(keyBytes);
             }

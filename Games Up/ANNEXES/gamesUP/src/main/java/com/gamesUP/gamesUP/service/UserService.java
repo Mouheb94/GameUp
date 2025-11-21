@@ -94,8 +94,6 @@ public class UserService {
     }
     @Transactional(readOnly = true)
     public Optional<User> findByUsernameOrEmail(String usernameOrEmail) {
-        // Si vous avez un champ "nom" ou "username" dans le repository, adaptez ici.
-        // Pour l'instant, on délègue à la méthode existante findByEmail.
         return userRepository.findByEmail(usernameOrEmail);
     }
 
